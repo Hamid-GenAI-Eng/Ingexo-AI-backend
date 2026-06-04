@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import apiRouter from './routes/index.js';
 import globalErrorHandler from './middlewares/error.middleware.js';
 import AppError from './utils/AppError.js';
+import { connectDB } from './config/db.js';
 
 const app = express();
 
@@ -47,6 +48,16 @@ const limiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false // Disable the `X-RateLimit-*` headers
 });
+// Database connection middleware for Serverless Environments (Vercel)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.use('/api', limiter);
 
 // 2. MOUNT ROUTES
