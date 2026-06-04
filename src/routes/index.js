@@ -32,8 +32,15 @@ router.get('/health', (req, res) => {
   res.status(200).json({
     status: 'success',
     message: 'Ingexo AI Backend API is healthy and operational',
-    timestamp: new Date()
+    timestamp: new Date(),
+    cloudinaryConfig: {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME ? process.env.CLOUDINARY_CLOUD_NAME.substring(0, 3) + '...' : 'undefined',
+      apiKey: process.env.CLOUDINARY_API_KEY ? process.env.CLOUDINARY_API_KEY.substring(0, 4) + '...' : 'undefined',
+      hasSecret: !!process.env.CLOUDINARY_API_SECRET,
+      nodeEnv: process.env.NODE_ENV
+    }
   });
 });
+
 
 export default router;
