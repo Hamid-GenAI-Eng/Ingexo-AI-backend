@@ -54,10 +54,20 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ['owner', 'editor', 'viewer'],
-        message: 'Role must be owner, editor, or viewer'
+        values: ['owner', 'admin', 'editor', 'viewer'],
+        message: 'Role must be owner, admin, editor, or viewer'
       },
       default: 'owner'
+    },
+    workspaceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Workspace'
+    },
+    resetPasswordOtp: {
+      type: String
+    },
+    resetPasswordOtpExpires: {
+      type: Date
     }
   },
   {

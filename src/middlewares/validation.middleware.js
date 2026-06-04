@@ -56,3 +56,59 @@ export const validateGoogleAuth = (req, res, next) => {
 
   next();
 };
+
+/**
+ * Validation Middleware for Forgot Password Requests
+ */
+export const validateForgotPassword = (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email || !email.trim()) {
+    return next(new AppError('Email address is required', 400));
+  }
+
+  const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+  if (!emailRegex.test(email)) {
+    return next(new AppError('Please provide a valid email address', 400));
+  }
+
+  next();
+};
+
+/**
+ * Validation Middleware for Verify OTP Requests
+ */
+export const validateVerifyOtp = (req, res, next) => {
+  const { email, otp } = req.body;
+
+  if (!email || !email.trim()) {
+    return next(new AppError('Email address is required', 400));
+  }
+
+  if (!otp || otp.trim().length !== 6) {
+    return next(new AppError('OTP must be a 6-digit code', 400));
+  }
+
+  next();
+};
+
+/**
+ * Validation Middleware for Reset Password Requests
+ */
+export const validateResetPassword = (req, res, next) => {
+  const { email, otp, password } = req.body;
+
+  if (!email || !email.trim()) {
+    return next(new AppError('Email address is required', 400));
+  }
+
+  if (!otp || otp.trim().length !== 6) {
+    return next(new AppError('OTP must be a 6-digit code', 400));
+  }
+
+  if (!password || password.length < 8) {
+    return next(new AppError('Password must be at least 8 characters long', 400));
+  }
+
+  next();
+};

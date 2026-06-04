@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import AppError from '../utils/AppError.js';
 import { OAuth2Client } from 'google-auth-library';
+import { initializeUserWorkspace } from '../modules/workspace/team.service.js';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -22,7 +23,12 @@ export const registerUser = async (fullName, email, password) => {
     authProvider: 'local'
   });
 
-  return newUser;
+  // Automatically initialize default workspace for the new user
+  await initializeUserWorkspace(newUser._id, newUser.fullName);
+
+  // Fetch updated user with linked workspaceId
+  const updatedUser = await User.findById(newUser._id);
+  return updatedUser;
 };
 
 /**
@@ -97,5 +103,72 @@ export const verifyGoogleIdToken = async (idToken) => {
     role: 'owner' // default role for first time signups
   });
 
+  // Automatically initialize default workspace for the new user
+  await initializeUserWorkspace(user._id, user.fullName);
+
+  // Fetch updated user with linked workspaceId
+  const updatedUser = await User.findById(user._id);
+  return updatedUser;
+};
+
+/**
+ * Service to request password reset OTP
+ */
+export const requestForgotPasswordOtp = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError('No user found with this email address', 404);
+  }
+
+  // Generate 6 digit numeric code
+  const otp = String(Math.floor(100000 + Math.random() * 900000));
+  
+  // Set OTP and expiry (15 mins)
+  user.resetPasswordOtp = otp;
+  user.resetPasswordOtpExpires = Date.now() + 15 * 60 * 1000;
+  
+  await user.save();
+  return otp;
+};
+
+/**
+ * Service to verify OTP code
+ */
+export const verifyOtpCode = async (email, enteredOtp) => {
+  const user = await User.findOne({
+    email,
+    resetPasswordOtp: enteredOtp,
+    resetPasswordOtpExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired verification code', 400);
+  }
+
+  return true;
+};
+
+/**
+ * Service to reset password
+ */
+export const resetUserPassword = async (email, enteredOtp, newPassword) => {
+  const user = await User.findOne({
+    email,
+    resetPasswordOtp: enteredOtp,
+    resetPasswordOtpExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    throw new AppError('Invalid or expired session request', 400);
+  }
+
+  // Set new password
+  user.password = newPassword;
+  
+  // Clear OTP fields
+  user.resetPasswordOtp = undefined;
+  user.resetPasswordOtpExpires = undefined;
+  
+  await user.save();
   return user;
 };
