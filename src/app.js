@@ -52,6 +52,16 @@ app.use('/api', limiter);
 // 2. MOUNT ROUTES
 app.use('/api', apiRouter);
 
+// Root path welcome message
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Welcome to the Ingexo AI Enterprise API portal.',
+    health: '/api/health',
+    timestamp: new Date()
+  });
+});
+
 // 3. UNHANDLED ROUTES FALLBACK
 app.all('*', (req, res, next) => {
   next(new AppError(`Cannot find requested route ${req.originalUrl} on this server`, 404));
