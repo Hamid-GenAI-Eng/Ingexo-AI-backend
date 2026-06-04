@@ -17,7 +17,7 @@ export const connectDB = async () => {
   }
 
   // If already connected, do not open a new connection
-  if (mongoose.connection.readyState >= 1) {
+  if (mongoose.connection.readyState === 1) {
     return mongoose.connection;
   }
 
