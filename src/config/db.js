@@ -28,7 +28,7 @@ export const connectDB = async () => {
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(uri, {
-      bufferCommands: false, // Disable Mongoose buffering when connection is lost
+      bufferCommands: true, // Enable Mongoose buffering so queries wait for connection
       serverSelectionTimeoutMS: 5000 // Fast timeout if unreachable
     }).then((m) => {
       console.log(`📡 MongoDB Connected successfully`);
