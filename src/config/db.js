@@ -5,6 +5,12 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 export const connectDB = async () => {
   const uri = process.env.MONGODB_URI || MONGODB_URI;
 
@@ -16,25 +22,32 @@ export const connectDB = async () => {
     return;
   }
 
-  // If already connected, do not open a new connection
-  if (mongoose.connection.readyState === 1) {
-    return mongoose.connection;
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(uri, {
+      bufferCommands: false, // Disable Mongoose buffering when connection is lost
+      serverSelectionTimeoutMS: 5000 // Fast timeout if unreachable
+    }).then((m) => {
+      console.log(`📡 MongoDB Connected successfully`);
+      return m;
+    });
   }
 
   try {
-    const conn = await mongoose.connect(uri, {
-      bufferCommands: false, // Disable Mongoose buffering when connection is lost
-      serverSelectionTimeoutMS: 5000 // Timeout quickly if unreachable
-    });
-    console.log(`📡 MongoDB Connected: ${conn.connection.host}`);
-    return conn;
+    cached.conn = await cached.promise;
   } catch (error) {
+    cached.promise = null; // Reset promise if connection failed
     console.error(`❌ MongoDB connection error: ${error.message}`);
-    // Do not crash the entire serverless container in Vercel
     if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
       process.exit(1);
     }
+    throw error;
   }
+
+  return cached.conn;
 };
 
 // Monitor mongoose connection status
