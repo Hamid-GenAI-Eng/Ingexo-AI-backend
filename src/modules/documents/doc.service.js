@@ -22,7 +22,7 @@ export const createDocument = async ({
     cloudinaryResult = await uploadStreamToCloudinary(fileBuffer, name);
   } catch (error) {
     console.error('Cloudinary upload failure:', error.message);
-    throw new AppError('File upload failed. Please try again.', 500);
+    throw new AppError('File upload failed: ' + error.message, 500);
   }
 
   // 2. Create the Document in MongoDB Atlas
