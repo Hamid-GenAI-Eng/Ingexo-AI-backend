@@ -59,18 +59,11 @@ export default (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
-  if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, res);
-  } else {
-    let error = Object.assign(Object.create(Object.getPrototypeOf(err)), err);
-    error.message = err.message; // assign message which is not enumerable
-
-    if (error.name === 'CastError') error = handleCastErrorDB(error);
-    if (error.code === 11000) error = handleDuplicateKeyDB(error);
-    if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
-    if (error.name === 'JsonWebTokenError') error = handleJWTError();
-    if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
-
-    sendErrorProd(error, res);
-  }
+  // Temporarily expose full error details to diagnose Vercel connection issues
+  return res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+    stack: err.stack,
+    error: err
+  });
 };
