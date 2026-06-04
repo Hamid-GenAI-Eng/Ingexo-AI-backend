@@ -4,11 +4,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Configure Cloudinary API credentials
+// TEMPORARY: Forcing verified working credentials to bypass outdated Vercel dashboard variables
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  cloud_name: 'dcvae0jh4',
+  api_key: '262254892584463',
+  api_secret: 'BF_HhjkB_VCZzKDUUc-niGjPem4'
 });
+
 
 /**
  * Upload a memory file buffer straight to Cloudinary as a stream
