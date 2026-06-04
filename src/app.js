@@ -12,6 +12,9 @@ import { connectDB } from './config/db.js';
 
 const app = express();
 
+// Enable trust proxy for serverless reverse proxy environments (Vercel)
+app.set('trust proxy', 1);
+
 // 1. GLOBAL MIDDLEWARES
 // Security headers
 app.use(helmet());
